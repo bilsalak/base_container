@@ -1,0 +1,45 @@
+server {
+    listen 8080 default_server;
+    listen [::]:8080 default_server ipv6only=on;
+
+    root /home/www-data;
+    index index.php index.html;
+    include /etc/nginx/security;
+
+    # Make site accessible from http://localhost/
+    server_name localhost;
+
+    # serve static files directly
+    location ~* ^.+.(json|ico|xml|txt)$ {
+        try_files         $uri =404;
+        access_log        off;
+    }
+
+    location / {
+    	index index.html;
+		alias /home/public/;
+		try_files $uri $uri/ =404;
+    }
+
+    location /ws/ {
+        rewrite ^/ws/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)?/?$ /ws/$1/$2/$3.php?service_namespace=$4&service_class=$5&service_method=$6 last;
+
+        add_header 'Access-Control-Allow-Origin' 'http://localhost:8081';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST';
+        add_header 'Access-Control-Allow-Credentials' 'true';
+
+        try_files         $uri =404;
+        fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+    }
+
+    location /ws_debug/ {
+        rewrite ^/ws_debug/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)?/?$ /ws_debug/$1/$2/$3.php?service_namespace=$4&service_class=$5&service_method=$6 last;
+
+        try_files         $uri =404;
+        fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+        fastcgi_index index.php;
+        include /etc/nginx/fastcgi_params;
+    }
+}
