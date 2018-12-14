@@ -5,12 +5,12 @@ FROM ubuntu:18.04
 RUN \
   export DEBIAN_FRONTEND=noninteractive && \
   apt-get update -y && \
-  apt-get upgrade -y && \
-  apt-get install apt-utils -y && \
-  apt-get upgrade -y && \
   apt-get dist-upgrade -y && \
   apt-get autoremove --purge && \
-  rm -rf /tmp/*
+  apt-get clean && \
+  rm -rf /tmp/* && \
+  rm -rf /var/log && \
+  mkdir -p /var/log/apt
 
 ########## Add startup manager
 COPY startup_manager/ /opt/startup_manager/
